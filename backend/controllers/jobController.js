@@ -1,7 +1,12 @@
 // controllers/jobController.js
 const Job = require('../models/Job');
 const Application = require('../models/Application'); // Ensure this is defined
+const socketIo = require('socket.io');
+const  http = require('http');
+const app = require('express')();
+const server = http.createServer(app);
 
+const io = socketIo(server);
 const getJobs = async (req, res) => {
   try {
     const jobs = await Job.find({});
@@ -65,12 +70,21 @@ const createJob = async (req, res) => {
   try {
     const newJob = new Job({ title, company, type, location, description, salaryRange, requirements });
     await newJob.save();
+    
+    // Emit the new job to all connected clients
+    console.log('Emitting jobCreated event with job:', newJob);  // Log the new job
+    io.emit('jobCreated', newJob);  // Ensure this matches the frontend listener
+
     res.status(201).json(newJob);
   } catch (error) {
-    console.error(error);
+    console.error('Error creating job:', error);
     res.status(500).json({ message: 'Failed to create job' });
   }
 };
+
+
+
+
 
 
 module.exports = {

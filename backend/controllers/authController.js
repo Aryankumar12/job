@@ -32,15 +32,13 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        console.log('Email:', email);
-        console.log('Password:', password);
+       
 
         const existingUser = await User.findOne({ email });
         if (!existingUser) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        console.log('Stored Password Hash:', existingUser.password);
 
         const matchPassword = await bcrypt.compare(password, existingUser.password);
         console.log('Password Match:', matchPassword);

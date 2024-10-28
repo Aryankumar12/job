@@ -4,9 +4,8 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const http = require('http');
 const socketIo = require('socket.io');
-const rateLimit = require('express-rate-limit')
-const  helmet = require('helmet')
-
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 // Initialize express app
 const app = express();
@@ -14,29 +13,25 @@ const app = express();
 // Load environment variables
 dotenv.config();
 
-
+// Rate limiting and security middleware
 const limiter = rateLimit({
-    windowMs: 15 * 60 *1000,
+    windowMs: 15 * 60 * 1000,
     max: 100,
-    message: "Too many requests, Please try again later"
-})
+    message: "Too many requests, please try again later."
+});
 
 app.use(limiter);
-app.use(helmet())
-
-
-// Middleware
+app.use(helmet());
 app.use(cors({
     origin: 'http://localhost:3000',  // Frontend URL
     credentials: true
 }));
 app.use(express.json());  // To parse JSON bodies
 
-
-app.use((req, res, next)=>{
-    res.setHeader("Content-Security-Policy", "deafaut-src 'self'")
+app.use((req, res, next) => {
+    res.setHeader("Content-Security-Policy", "default-src 'self'");
     next();
-})
+});
 
 // Routes
 const userRoutes = require('./routes/userRoutes');
@@ -85,18 +80,19 @@ const io = socketIo(server, {
     }
 });
 
-// Socket.IO connection
+// Socket.IO connection handling
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log('A user connected with ID:', socket.id);
 
     // Example: Listen for 'notification' event and broadcast it
     socket.on('notification', (data) => {
+        console.log('Notification received:', data);
         io.emit('notification', data);  // Broadcast to all clients
     });
 
     // Handle user disconnect
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log('User disconnected with ID:', socket.id);
     });
 });
 
